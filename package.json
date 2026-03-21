@@ -2,7 +2,7 @@
   "name": "vscode-behat-in-docker",
   "displayName": "Behat in Docker",
   "description": "Run Behat tests inside Docker containers",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "icon": "icon.png",
   "publisher": "xMIkeXeeioi",
