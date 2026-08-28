@@ -47,7 +47,12 @@ suite('TestDiscovery', () => {
 
         // Mock workspace functions using sinon
         sandbox.stub(vscode.workspace, 'getConfiguration').returns({
-            get: sandbox.stub().returns('**/*.feature')
+            get: sandbox.stub().callsFake((key: string) => {
+                if (key === 'testFilePattern') {
+                    return '**/*.feature';
+                }
+                return undefined;
+            })
         } as any);
         
         sandbox.stub(vscode.workspace, 'findFiles').resolves([
@@ -81,6 +86,18 @@ suite('TestDiscovery', () => {
         await testDiscovery.discoverAllTests();
 
         sinon.assert.calledOnce(testController.items.replace as sinon.SinonStub);
+    });
+
+    test('should exclude nested worktree feature files', async () => {
+        const uri = vscode.Uri.file('/project/.worktrees/task/core/features/Nested.feature');
+
+        await testDiscovery.addTestForFile(uri);
+
+        sinon.assert.notCalled(testController.items.add as sinon.SinonStub);
+        sinon.assert.calledWith(
+            outputChannel.appendLine as sinon.SinonStub,
+            `Skipping excluded feature file: ${uri.fsPath}`
+        );
     });
 
     test('should add test for file', async () => {

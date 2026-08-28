@@ -1,14 +1,14 @@
 {
-  "name": "vscode-behat-in-docker",
-  "displayName": "Behat in Docker",
-  "description": "Run Behat tests inside Docker containers",
-  "version": "0.1.1",
+  "name": "vscode-behat-in-docker-localized",
+  "displayName": "Behat in Docker (Localized)",
+  "description": "Run localized Behat tests inside Docker containers",
+  "version": "0.2.0",
   "license": "MIT",
   "icon": "icon.png",
-  "publisher": "xMIkeXeeioi",
+  "publisher": "denis-davidovich",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Michael-vb/vscode-behat-in-docker"
+    "url": "https://github.com/Denis-Davidovich/vscode-behat-in-docker"
   },
   "engines": {
     "vscode": "^1.96.0"
@@ -44,6 +44,20 @@
           "type": "string",
           "default": "**/*.feature",
           "description": "Pattern to identify feature files"
+        },
+        "behatDocker.testFileExcludePatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "**/vendor/**",
+            "**/node_modules/**",
+            "**/.git/**",
+            "**/.worktrees/**",
+            "**/worktrees/**"
+          ],
+          "description": "Glob patterns for feature files and nested worktrees to exclude"
         }
       }
     }
@@ -70,5 +84,8 @@
     "sinon": "^19.0.2",
     "ovsx": "^0.10.0",
     "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "minimatch": "^10.0.1"
   }
 }

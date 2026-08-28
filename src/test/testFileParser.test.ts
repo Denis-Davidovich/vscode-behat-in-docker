@@ -107,6 +107,34 @@ suite('TestFileParser', () => {
         assert.strictEqual(scenarioRange.end.character, "Scenario: User logs in".length);
     });
 
+    test('should parse Russian feature and scenario keywords', async () => {
+        (vscode.workspace.openTextDocument as sinon.SinonStub).restore();
+        sandbox.stub(vscode.workspace, 'openTextDocument').resolves({
+            getText: () => `# language: ru
+Функция: Удаление аккаунта
+  Сценарий: Успешное удаление
+    Допустим существует аккаунт
+
+  Структура сценария: Ошибка подтверждения
+    Когда передано значение <value>
+`
+        } as any);
+
+        const addStub = sandbox.stub();
+        (mockTestItem as any).children = {
+            replace: sandbox.stub(),
+            add: addStub
+        };
+
+        await parser.parseTestFile(mockTestItem);
+
+        assert.strictEqual(mockTestItem.label, 'Feature: Удаление аккаунта');
+        assert.strictEqual(addStub.callCount, 2);
+        assert.strictEqual(addStub.firstCall.args[0].label, 'Сценарий: Успешное удаление');
+        assert.strictEqual(addStub.secondCall.args[0].label, 'Структура сценария: Ошибка подтверждения');
+        assert.strictEqual((mockTestItem.range as vscode.Range).start.line, 1);
+    });
+
     test('should default feature label and range when no "Feature:" line exists', async () => {
         // Override the openTextDocument stub to return content without a "Feature:" line
         (vscode.workspace.openTextDocument as sinon.SinonStub).restore();

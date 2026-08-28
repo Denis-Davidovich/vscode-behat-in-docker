@@ -1,7 +1,15 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import * as fs from 'fs';
+import { minimatch } from 'minimatch';
 import { TestFileParser } from './testFileParser';
+
+const DEFAULT_EXCLUDE_PATTERNS = [
+    '**/vendor/**',
+    '**/node_modules/**',
+    '**/.git/**',
+    '**/.worktrees/**',
+    '**/worktrees/**'
+];
 
 export class TestDiscovery {
     private testFileParser: TestFileParser;
@@ -17,14 +25,16 @@ export class TestDiscovery {
         this.outputChannel.appendLine('Starting test discovery');
         const config = vscode.workspace.getConfiguration('behatDocker');
         const pattern = config.get<string>('testFilePattern') || '**/*.feature';
+        const excludePatterns = this.getExcludePatterns();
         
         this.outputChannel.appendLine(`Using test file pattern: ${pattern}`);
-        
-        const excludePattern = '**/vendor/**';
-        this.outputChannel.appendLine(`Excluding files that match: ${excludePattern}`);
+        this.outputChannel.appendLine(`Excluding files that match: ${excludePatterns.join(', ')}`);
         
         this.testController.items.replace([]);
         
+        const excludePattern = excludePatterns.length === 1
+            ? excludePatterns[0]
+            : `{${excludePatterns.join(',')}}`;
         const files = await vscode.workspace.findFiles(pattern, excludePattern);
         this.outputChannel.appendLine(`Found ${files.length} feature files`);
         
@@ -38,6 +48,11 @@ export class TestDiscovery {
     }
 
     public async addTestForFile(uri: vscode.Uri): Promise<void> {
+        if (this.isExcluded(uri)) {
+            this.outputChannel.appendLine(`Skipping excluded feature file: ${uri.fsPath}`);
+            return;
+        }
+
         this.outputChannel.appendLine(`Adding feature file: ${uri.fsPath}`);
         const testItem = this.testController.createTestItem(
             uri.fsPath,
@@ -50,6 +65,11 @@ export class TestDiscovery {
     }
 
     public async updateTestForFile(uri: vscode.Uri): Promise<void> {
+        if (this.isExcluded(uri)) {
+            this.testController.items.delete(uri.fsPath);
+            return;
+        }
+
         this.outputChannel.appendLine(`Updating feature file: ${uri.fsPath}`);
         const testItem = this.testController.items.get(uri.fsPath);
         if (testItem) {
@@ -62,5 +82,18 @@ export class TestDiscovery {
     public removeTestForFile(uri: vscode.Uri): void {
         this.outputChannel.appendLine(`Removing feature file: ${uri.fsPath}`);
         this.testController.items.delete(uri.fsPath);
+    }
+
+    private getExcludePatterns(): string[] {
+        const configured = vscode.workspace
+            .getConfiguration('behatDocker')
+            .get<string[]>('testFileExcludePatterns');
+
+        return configured?.length ? configured : DEFAULT_EXCLUDE_PATTERNS;
+    }
+
+    private isExcluded(uri: vscode.Uri): boolean {
+        const relativePath = vscode.workspace.asRelativePath(uri, false).replace(/\\/g, '/');
+        return this.getExcludePatterns().some(pattern => minimatch(relativePath, pattern, { dot: true }));
     }
 }

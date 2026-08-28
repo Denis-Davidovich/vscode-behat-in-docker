@@ -1,11 +1,9 @@
-# Behat in Docker Extension for VS Code
+# Behat in Docker (Localized) Extension for VS Code
 
-This extension was developed with the assistance of AI tools.
+This fork adds localized Gherkin discovery and safer defaults for repositories
+that contain nested Git worktrees.
 
 Run Behat tests inside Docker containers directly from VS Code's Test Explorer UI.
-
-[![Visual Studio Marketplace](https://img.shields.io/visual-studio-marketplace/v/xMIkeXeeioi.vscode-behat-in-docker)](https://marketplace.visualstudio.com/items?itemName=xMIkeXeeioi.vscode-behat-in-docker)
-[![Open VSX Version](https://img.shields.io/open-vsx/v/xMIkeXeeioi/vscode-behat-in-docker)](https://open-vsx.org/extension/xMIkeXeeioi/vscode-behat-in-docker)
 
 ## Features
 
@@ -15,10 +13,13 @@ Run Behat tests inside Docker containers directly from VS Code's Test Explorer U
 - 🐛 Debug support with Xdebug integration
 - 📋 Rich error reporting with source locations
 - 📂 Configurable container paths and Behat executable locations
+- 🌐 English and Russian Gherkin keywords (`Feature`/`Функция`, `Scenario`/`Сценарий`)
+- 🌳 Nested worktree and dependency directories excluded from discovery by default
 
 ## Installation
 
-1. Install the extension from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=xMIkeXeeioi.vscode-behat-in-docker) or from [Open VSX](https://open-vsx.org/extension/xMIkeXeeioi/vscode-behat-in-docker) (used by [Kiro](https://kiro.dev) and other editors that use the Open VSX registry).
+1. Build a VSIX with `npx @vscode/vsce package` and install it with
+   `code --install-extension <file>.vsix`.
 2. Ensure your Docker container is running with your PHP project mounted
 3. Configure the extension settings (see below)
 
@@ -34,6 +35,8 @@ Open VS Code settings (Ctrl+,) and configure under **Behat in Docker**:
   (Default: `vendor/bin/behat`)
 - `behatDocker.testFilePattern`: Glob pattern for feature files  
   (Default: `**/*.feature`)
+- `behatDocker.testFileExcludePatterns`: Glob patterns excluded from discovery
+  (Defaults exclude dependencies, Git metadata, and nested worktrees)
 
 ## Usage
 

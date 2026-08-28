@@ -1,6 +1,23 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 
+const FEATURE_KEYWORDS = [
+    'Feature:',
+    'Функция:',
+    'Функционал:',
+    'Функциональность:',
+    'Свойство:'
+];
+
+const SCENARIO_KEYWORDS: ReadonlyArray<readonly [keyword: string, label: string]> = [
+    ['Scenario Outline:', 'Scenario Outline: '],
+    ['Структура сценария:', 'Структура сценария: '],
+    ['Шаблон сценария:', 'Шаблон сценария: '],
+    ['Scenario:', 'Scenario: '],
+    ['Сценарий:', 'Сценарий: '],
+    ['Пример:', 'Пример: ']
+];
+
 export class TestFileParser {
     constructor(
         private outputChannel: vscode.OutputChannel,
@@ -27,8 +44,9 @@ export class TestFileParser {
             
             for (let i = 0; i < lines.length; i++) {
                 const trimmed = lines[i].trim();
-                if (trimmed.startsWith('Feature:')) {
-                    featureTitle = trimmed.replace('Feature:', '').trim();
+                const featureKeyword = FEATURE_KEYWORDS.find(keyword => trimmed.startsWith(keyword));
+                if (featureKeyword) {
+                    featureTitle = trimmed.substring(featureKeyword.length).trim();
                     featureLine = i;
                     break;
                 }
@@ -54,21 +72,14 @@ export class TestFileParser {
             // Find all scenarios in the feature file
             for (let i = 0; i < lines.length; i++) {
                 const trimmed = lines[i].trim();
-                if (trimmed.startsWith('Scenario:') || trimmed.startsWith('Scenario Outline:')) {
-                    let scenarioDesc = '';
-                    let prefix = '';  // Store the prefix here
-                    if (trimmed.startsWith('Scenario:')) {
-                        scenarioDesc = trimmed.substring(9).trim();
-                        prefix = 'Scenario: ';
-                    } else {
-                        scenarioDesc = trimmed.substring('Scenario Outline:'.length).trim();
-                        prefix = 'Scenario Outline: ';
-                    }
+                const scenarioKeyword = SCENARIO_KEYWORDS.find(([keyword]) => trimmed.startsWith(keyword));
+                if (scenarioKeyword) {
+                    const [keyword, label] = scenarioKeyword;
+                    const scenarioDesc = trimmed.substring(keyword.length).trim();
                     const scenarioId = `${testItem.id}::${scenarioDesc}`;
-                    // Prefix label with "Scenario: " or "Scenario Outline: "
                     const scenarioItem = this.testController.createTestItem(
                         scenarioId,
-                        `${prefix}${scenarioDesc}`, // Use the prefix and description
+                        `${label}${scenarioDesc}`,
                         testItem.uri
                     );
                     
