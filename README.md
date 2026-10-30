@@ -18,8 +18,8 @@ Run Behat tests inside Docker containers directly from VS Code's Test Explorer U
 
 ## Installation
 
-1. Build a VSIX with `npx @vscode/vsce package` and install it with
-   `code --install-extension <file>.vsix`.
+1. Build and install the extension with `make install`, see
+   [INSTALL-FORK.md](INSTALL-FORK.md).
 2. Ensure your Docker container is running with your PHP project mounted
 3. Configure the extension settings (see below)
 
@@ -54,3 +54,9 @@ Open VS Code settings (Ctrl+,) and configure under **Behat in Docker**:
 2. Set breakpoints in your feature files or supporting code
 3. Use the "Debug" profile from the Test Explorer
 4. VS Code will automatically attach to the debugger
+
+## Development
+
+- `make check` compiles and lints.
+- `make test` runs the extension tests in a VS Code test host. Set
+  `VSCODE_TEST_EXECUTABLE_PATH` to use an installed VS Code instead of downloading one.
