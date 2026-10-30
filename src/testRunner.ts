@@ -28,6 +28,7 @@ export class TestRunner {
         const containerName = config.get<string>('containerName');
         const containerPath = config.get<string>('containerPath') || '/var/www';
         const behatPath = config.get<string>('behatPath') || 'vendor/bin/behat';
+        const projectPath = config.get<string>('projectPath') || '';
 
         let debugSessionToStop: vscode.DebugSession | undefined;
 
@@ -53,7 +54,7 @@ export class TestRunner {
                         request: 'launch',
                         port: 9003,
                         pathMappings: {
-                            [containerPath]: "${workspaceFolder}"
+                            [containerPath]: path.posix.join("${workspaceFolder}", projectPath)
                         }
                     };
                     await vscode.debug.startDebugging(undefined, debugConfig as any);
@@ -76,6 +77,7 @@ export class TestRunner {
         await this.executeTests(testsToRun, run, token, {
             containerName,
             containerPath,
+            projectPath,
             behatPath,
             isDebug
         });
@@ -100,6 +102,7 @@ export class TestRunner {
         options: {
             containerName: string;
             containerPath: string;
+            projectPath: string;
             behatPath: string;
             isDebug: boolean;
         }
@@ -109,7 +112,7 @@ export class TestRunner {
 
             run.started(test);
             try {
-                const relativePath = vscode.workspace.asRelativePath(test.uri!);
+                const relativePath = path.posix.relative(options.projectPath, vscode.workspace.asRelativePath(test.uri!));
                 const containerFilePath = path.posix.join(options.containerPath, relativePath);
                 
                 let behatCommand = `php ${options.behatPath} --no-interaction --strict`;

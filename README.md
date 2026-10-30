@@ -31,6 +31,8 @@ Open VS Code settings (Ctrl+,) and configure under **Behat in Docker**:
   Your Docker container name (e.g. `my-php-container`)
 - `behatDocker.containerPath`: Path inside the container where the project is mounted  
   (Default: `/var/www`)
+- `behatDocker.projectPath`: Project folder relative to the workspace root, the one mounted at `containerPath`  
+  (Default: empty, the workspace root is the project)
 - `behatDocker.behatPath`: Path to the Behat executable relative to the project root  
   (Default: `vendor/bin/behat`)
 - `behatDocker.testFilePattern`: Glob pattern for feature files  

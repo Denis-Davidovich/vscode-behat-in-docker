@@ -102,6 +102,73 @@ suite('TestRunner', () => {
         );
     });
 
+    test('runTests should resolve file paths against projectPath', async () => {
+        sandbox.stub(vscode.workspace, 'getConfiguration')
+            .returns({
+                get: sandbox.stub().callsFake((key: string) => {
+                    if (key === 'containerName') {return 'test-container';}
+                    if (key === 'containerPath') {return '/var/www';}
+                    if (key === 'behatPath') {return 'vendor/bin/behat';}
+                    if (key === 'projectPath') {return 'services/app';}
+                    return undefined;
+                })
+            } as any);
+
+        const testItem = {
+            id: 'TestFeature::User logs in',
+            uri: vscode.Uri.file('/workspace/services/app/features/TestFeature.feature'),
+            range: new vscode.Range(new vscode.Position(10, 0), new vscode.Position(10, 0))
+        } as vscode.TestItem;
+
+        sandbox.stub(vscode.workspace, 'asRelativePath')
+            .returns('services/app/features/TestFeature.feature');
+
+        const execStub = sandbox.stub().resolves({
+            stdout: 'All scenarios passed',
+            stderr: ''
+        });
+        testRunner.setExecCommand(execStub);
+
+        const request = {
+            include: [testItem]
+        } as unknown as vscode.TestRunRequest;
+        const token = { isCancellationRequested: false } as vscode.CancellationToken;
+
+        await testRunner.runTests(request, token, false);
+
+        assert.strictEqual(
+            execStub.firstCall.args[0],
+            'docker exec -t test-container php vendor/bin/behat --no-interaction --strict /var/www/features/TestFeature.feature:11'
+        );
+    });
+
+    test('runTests should map containerPath to projectPath when debugging', async () => {
+        sandbox.stub(vscode.workspace, 'getConfiguration')
+            .returns({
+                get: sandbox.stub().callsFake((key: string) => {
+                    if (key === 'containerName') {return 'test-container';}
+                    if (key === 'containerPath') {return '/var/www';}
+                    if (key === 'behatPath') {return 'vendor/bin/behat';}
+                    if (key === 'projectPath') {return 'services/app';}
+                    return undefined;
+                })
+            } as any);
+
+        const startDebuggingStub = sandbox.stub(vscode.debug, 'startDebugging').resolves(true);
+
+        const request = {
+            include: []
+        } as unknown as vscode.TestRunRequest;
+        const token = { isCancellationRequested: false } as vscode.CancellationToken;
+
+        await testRunner.runTests(request, token, true);
+
+        assert.deepStrictEqual(
+            (startDebuggingStub.firstCall.args[1] as vscode.DebugConfiguration).pathMappings,
+            { '/var/www': '${workspaceFolder}/services/app' }
+        );
+    });
+
     test('runTests should handle test failures', async () => {
         sandbox.stub(vscode.workspace, 'getConfiguration')
             .returns({
