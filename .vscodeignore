@@ -1,8 +1,12 @@
 .vscode/**
 .vscode-test/**
+.worktrees/**
+.github/**
 src/**
 .gitignore
 .yarnrc
+Makefile
+INSTALL-FORK.md
 vsc-extension-quickstart.md
 **/tsconfig.json
 **/eslint.config.mjs

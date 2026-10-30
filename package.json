@@ -2,7 +2,7 @@
   "name": "vscode-behat-in-docker-localized",
   "displayName": "Behat in Docker (Localized)",
   "description": "Run localized Behat tests inside Docker containers",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "license": "MIT",
   "icon": "icon.png",
   "publisher": "denis-davidovich",
@@ -34,6 +34,11 @@
           "type": "string",
           "default": "/var/www",
           "description": "Path inside the Docker container where the project is mounted"
+        },
+        "behatDocker.projectPath": {
+          "type": "string",
+          "default": "",
+          "description": "Project folder relative to the workspace root: the folder mounted at containerPath. Leave empty if it is the workspace root"
         },
         "behatDocker.behatPath": {
           "type": "string",
